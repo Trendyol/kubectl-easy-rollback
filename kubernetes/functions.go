@@ -3,7 +3,7 @@ package kubernetes
 import (
 	"bytes"
 	"fmt"
-	"github.com/developer-guy/easy-rollback/client"
+	"github.com/Trendyol/easy-rollback/client"
 	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/spf13/cobra"
 	"github.com/ttacon/chalk"
