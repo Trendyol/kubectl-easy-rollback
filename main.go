@@ -1,6 +1,6 @@
 package main
 
-import "github.com/developer-guy/easy-rollback/command"
+import "github.com/Trendyol/easy-rollback/command"
 
 func main() {
 	command.Execute()
