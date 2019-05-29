@@ -2,7 +2,7 @@
 
 # EasyRollback
 
-EasyRollback is aim to easy rollback to previous images that  deployed.
+EasyRollback is aim to easy rollback to previous images that  deployed on k8s environment
 ## Installation
 
 You should have go installation first [go](https://golang.org/dl/) to install Golang.
