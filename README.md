@@ -14,7 +14,7 @@ brew install go
 Then get project
 
 ```bash
-go get github.com/Trendyol/easy-rollback
+go get -v github.com/Trendyol/easy-rollback
 ```
 
 ## Usage
