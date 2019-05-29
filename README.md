@@ -11,11 +11,6 @@ For OSX
 ```bash
 brew install go
 ```
-A package manager that we are using is [glide](https://github.com/Masterminds/glide) also you should install this.
-
-```bash
-brew install glide
-```
 Then get project
 
 ```bash
