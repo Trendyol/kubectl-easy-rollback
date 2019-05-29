@@ -21,8 +21,8 @@ go get -v github.com/Trendyol/easy-rollback
 Project look at your .kube/config file to read current-context configs hence of you should have kubernetes environment configurations inside .kube/config.
 
 ```bash
-easy-rollback list --deployment <deployment> --namespace <namespace>
-easy-rollback rollback --to-image <image> --deployment <deployment> --namespace <namespace>
+easy-rollback list --deployment <deployment> --namespace <namespace> --> Will list all of your previous deployed images.
+easy-rollback rollback --to-image <image> --deployment <deployment> --namespace <namespace> --> Will rolback your deployment to given image.
 ```
 
 ## License
