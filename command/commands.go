@@ -2,7 +2,7 @@ package command
 
 import (
 	"fmt"
-	"github.com/developer-guy/easy-rollback/kubernetes"
+	"github.com/Trendyol/easy-rollback/kubernetes"
 	"github.com/spf13/cobra"
 	"os"
 )
