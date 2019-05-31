@@ -1,5 +1,5 @@
-hash: ff0f0a64aa924de8993ccd59ca8b460c01661dca982da00116be5d9706f1f372
-updated: 2019-05-31T15:35:47.430159+03:00
+hash: 359d7f8a8db96c1aa312f4d9b32255744ffd4e9e197b5d1e14833ac321322bdd
+updated: 2019-05-31T16:06:50.209343+03:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 782f4967f2dc4564575ca782fe2d04090b5faca8
@@ -50,7 +50,7 @@ imports:
 - name: github.com/spf13/pflag
   version: 583c0c0531f06d5278b7d917446061adc344b5cd
 - name: github.com/Trendyol/easy-rollback
-  version: 3a72514ba51afd1cfcf0357b1197997bf0c00447
+  version: 455ac5b97dbbd5a3dea938005209cc895bdcdb0c
   subpackages:
   - client
   - command

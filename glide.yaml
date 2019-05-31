@@ -1,4 +1,4 @@
-package: ( github.com/developer-guy/easy-rollback )
+package: ( github.com/Trendyol/easy-rollback )
 import:
 - package: k8s.io/client-go
   version: v11.0.0

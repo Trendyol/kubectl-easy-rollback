@@ -12,6 +12,7 @@ cp -r ./* ${SRCDIR}
 (
     echo ${GOPATH}
     cd ${SRCDIR}
-    go get .
+    go get . 
+    go build .
     go install .
 )
