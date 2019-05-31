@@ -8,7 +8,7 @@ export GO111MODULE=on
 [ -d ${GOPATH} ] && rm -rf ${GOPATH}
 mkdir -p ${GOPATH}/{src,pkg,bin}
 mkdir -p ${SRCDIR}
-cp main.go ${SRCDIR}
+cp -r ./* ${SRCDIR}
 (
     echo ${GOPATH}
     cd ${SRCDIR}
