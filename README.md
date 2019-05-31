@@ -17,6 +17,11 @@ Then get project
 go get -v github.com/Trendyol/easy-rollback
 ```
 
+Or you can easily download project via brew (OSX package manager)
+```bash
+brew tap trendyol/trendyol-tap
+brew install easy-rollback
+```
 ## Usage
 Project look at your .kube/config file to read current-context configs hence of you should have kubernetes environment configurations inside .kube/config.
 
