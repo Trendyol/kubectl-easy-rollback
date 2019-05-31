@@ -1,4 +1,4 @@
-module github.com/developer-guy/easy-rollback
+module github.com/trendyol/easy-rollback
 
 go 1.12
 
