@@ -2,9 +2,10 @@ package command
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/Trendyol/easy-rollback/kubernetes"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var rootCmd = &cobra.Command{

@@ -1,10 +1,11 @@
 package client
 
 import (
+	"path/filepath"
+
 	"github.com/mitchellh/go-homedir"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	"path/filepath"
 )
 
 func NewK8sClient() *kubernetes.Clientset {
