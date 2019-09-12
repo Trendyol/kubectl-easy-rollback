@@ -2,10 +2,13 @@ package command
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/Trendyol/easy-rollback/kubernetes"
 	"github.com/spf13/cobra"
-	"os"
 )
+
+const VERSION = "1.0.8"
 
 var rootCmd = &cobra.Command{
 	Use:   "",
@@ -26,6 +29,14 @@ var rollbackCommand = &cobra.Command{
 	Run:   kubernetes.RollbackDeployment(),
 }
 
+var versionCommand = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of easy-rollback",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("easy-rollback:", VERSION)
+	},
+}
+
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -37,5 +48,5 @@ func init() {
 	rootCmd.PersistentFlags().String("namespace", "default", "namespace")
 	rootCmd.PersistentFlags().String("deployment", "", "deployment")
 	rollbackCommand.Flags().String("to-image", "", "to-image")
-	rootCmd.AddCommand(listCommand, rollbackCommand)
+	rootCmd.AddCommand(listCommand, rollbackCommand, versionCommand)
 }

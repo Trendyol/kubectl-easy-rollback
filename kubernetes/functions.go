@@ -3,6 +3,9 @@ package kubernetes
 import (
 	"bytes"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/Trendyol/easy-rollback/client"
 	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/spf13/cobra"
@@ -10,8 +13,6 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"strings"
-	"time"
 )
 
 var k8sClient *kubernetes.Clientset
@@ -79,7 +80,7 @@ func ListPreviousDeployedImages() CommandFunction {
 				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s %s", image, creationTime.(string),
 					chalk.Green.Color("*")))
 			} else {
-				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s ", image, creationTime.(string), ))
+				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s ", image, creationTime.(string)))
 			}
 		}
 	}
