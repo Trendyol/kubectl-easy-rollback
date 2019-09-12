@@ -20,7 +20,7 @@ go get -v github.com/Trendyol/easy-rollback
 Or you can easily download project via brew (OSX package manager)
 ```bash
 brew tap trendyol/trendyol-tap
-brew install easy-EasyRollback
+brew install easy-rollback
 ```
 
 Or you can install the pre-compiled binary
