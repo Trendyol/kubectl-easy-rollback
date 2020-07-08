@@ -1,27 +1,48 @@
-package kubernetes
+package client
 
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/Trendyol/easy-rollback/client"
 	"github.com/emirpasic/gods/maps/hashmap"
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/ttacon/chalk"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
-var k8sClient *kubernetes.Clientset
-
-func init() {
-	k8sClient = client.NewK8sClient()
+type K8SClient struct {
+	*kubernetes.Clientset
 }
 
-type CommandFunction func(cmd *cobra.Command, args []string)
+func NewK8sClient() *K8SClient {
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		panic(err.Error())
+	}
+	var kubeConfigPath = filepath.Join(homeDir, ".kube", "config")
+
+	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// create the client
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+	return &K8SClient{client}
+}
+
+type CmdFunc func(cmd *cobra.Command, args []string)
 
 func findCurrentReplicaSetOfDeployment(replicaSets *v1.ReplicaSetList) v1.ReplicaSet {
 	for _, replicaSet := range replicaSets.Items {
@@ -46,12 +67,12 @@ func findOtherDeployedImages(replicaSets *v1.ReplicaSetList) *hashmap.Map {
 	return images
 }
 
-func ListPreviousDeployedImages() CommandFunction {
+func (k *K8SClient) ListPreviousDeployedImages() CmdFunc {
 	return func(cmd *cobra.Command, args []string) {
 		deploymentFlag := cmd.Flag("deployment").Value.String()
 		namespaceFlag := cmd.Flag("namespace").Value.String()
 
-		deploymentsClient := k8sClient.AppsV1().Deployments(namespaceFlag)
+		deploymentsClient := k.AppsV1().Deployments(namespaceFlag)
 
 		deployment, err := deploymentsClient.Get(deploymentFlag, metav1.GetOptions{})
 
@@ -66,7 +87,7 @@ func ListPreviousDeployedImages() CommandFunction {
 			labels.WriteString(key + "=" + value)
 		}
 
-		replicaSets, _ := k8sClient.AppsV1().ReplicaSets(namespaceFlag).List(metav1.ListOptions{
+		replicaSets, _ := k.AppsV1().ReplicaSets(namespaceFlag).List(metav1.ListOptions{
 			LabelSelector: labels.String(),
 		})
 
@@ -86,13 +107,13 @@ func ListPreviousDeployedImages() CommandFunction {
 	}
 }
 
-func RollbackDeployment() CommandFunction {
+func (k *K8SClient) RollbackDeployment() CmdFunc {
 	return func(cmd *cobra.Command, args []string) {
 		deploymentFlag := cmd.Flag("deployment").Value.String()
 		namespaceFlag := cmd.Flag("namespace").Value.String()
 		toImageFlag := cmd.Flag("to-image").Value.String()
 
-		deploymentsClient := k8sClient.AppsV1().Deployments(namespaceFlag)
+		deploymentsClient := k.AppsV1().Deployments(namespaceFlag)
 
 		deployment, err := deploymentsClient.Get(deploymentFlag, metav1.GetOptions{})
 

@@ -4,17 +4,21 @@
 builds:
   - env:
       - CGO_ENABLED=0
+      - GOFLAGS=-mod=vendor
+      - GO111MODULE=auto
     goos:
       - linux
       - darwin
       - windows
+    ldflags:
+      - -s -w -X cmd.version={{.Version}}
 archives:
-- replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -23,5 +27,14 @@ changelog:
   sort: asc
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
+      - '^docs:'
+      - '^test:'
+env:
+  - CGO_ENABLED=0
+  - GOFLAGS=-mod=vendor
+  - GO111MODULE=auto
+
+before:
+  hooks:
+    - go mod download
+    - go mod vendor
