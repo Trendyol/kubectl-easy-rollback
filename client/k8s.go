@@ -103,7 +103,7 @@ func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
 	}
 }
 
-func (k *K8SClient) RollbackDeployment(namespace,deployment,toImage string) {
+func (k *K8SClient) RollbackDeployment(namespace, deployment, toImage string) {
 
 	deploymentsClient := k.AppsV1().Deployments(namespace)
 
