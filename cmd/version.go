@@ -5,14 +5,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	version = "dev"
-)
-
-var versionCommand = &cobra.Command{
+var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number of kubectl-easyrollback",
-	Run: func(cmd *cobra.Command, args []string) {
+}
+
+func VersionCmdFunc(version string) func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, args []string) {
 		fmt.Printf("kubectl-easyrollback - version: %s", version)
-	},
+	}
 }

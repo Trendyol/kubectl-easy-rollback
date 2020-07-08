@@ -17,7 +17,7 @@ builds:
       - darwin
       - windows
     ldflags:
-      - -s -w -X cmd.version={{.Version}}
+      - -s -w -X main.version={{.Version}}
 archives:
   - builds:
       - binary
