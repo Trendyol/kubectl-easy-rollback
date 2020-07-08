@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -67,68 +68,57 @@ func findOtherDeployedImages(replicaSets *v1.ReplicaSetList) *hashmap.Map {
 	return images
 }
 
-func (k *K8SClient) ListPreviousDeployedImages() CmdFunc {
-	return func(cmd *cobra.Command, args []string) {
-		deploymentFlag := cmd.Flag("deployment").Value.String()
-		namespaceFlag := cmd.Flag("namespace").Value.String()
+func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
+	deploymentsClient := k.AppsV1().Deployments(namespace)
 
-		deploymentsClient := k.AppsV1().Deployments(namespaceFlag)
+	deploy, err := deploymentsClient.Get(context.Background(), deployment, metav1.GetOptions{})
 
-		deployment, err := deploymentsClient.Get(deploymentFlag, metav1.GetOptions{})
+	if err != nil {
+		panic(err)
+	}
 
-		if err != nil {
-			panic(err)
-		}
+	matchLabels := deploy.Spec.Selector.MatchLabels
+	var labels bytes.Buffer
 
-		matchLabels := deployment.Spec.Selector.MatchLabels
-		var labels bytes.Buffer
+	for key, value := range matchLabels {
+		labels.WriteString(key + "=" + value)
+	}
 
-		for key, value := range matchLabels {
-			labels.WriteString(key + "=" + value)
-		}
+	replicaSets, _ := k.AppsV1().ReplicaSets(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: labels.String(),
+	})
 
-		replicaSets, _ := k.AppsV1().ReplicaSets(namespaceFlag).List(metav1.ListOptions{
-			LabelSelector: labels.String(),
-		})
+	currentReplicaSet := findCurrentReplicaSetOfDeployment(replicaSets)
 
-		currentReplicaSet := findCurrentReplicaSetOfDeployment(replicaSets)
+	deployedImages := findOtherDeployedImages(replicaSets)
 
-		deployedImages := findOtherDeployedImages(replicaSets)
-
-		for _, image := range deployedImages.Keys() {
-			creationTime, _ := deployedImages.Get(image)
-			if strings.Compare(currentReplicaSet.Spec.Template.Spec.Containers[0].Image, image.(string)) == 0 {
-				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s %s", image, creationTime.(string),
-					chalk.Green.Color("*")))
-			} else {
-				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s ", image, creationTime.(string)))
-			}
+	for _, image := range deployedImages.Keys() {
+		creationTime, _ := deployedImages.Get(image)
+		if strings.Compare(currentReplicaSet.Spec.Template.Spec.Containers[0].Image, image.(string)) == 0 {
+			fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s %s", image, creationTime.(string),
+				chalk.Green.Color("*")))
+		} else {
+			fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s ", image, creationTime.(string)))
 		}
 	}
 }
 
-func (k *K8SClient) RollbackDeployment() CmdFunc {
-	return func(cmd *cobra.Command, args []string) {
-		deploymentFlag := cmd.Flag("deployment").Value.String()
-		namespaceFlag := cmd.Flag("namespace").Value.String()
-		toImageFlag := cmd.Flag("to-image").Value.String()
+func (k *K8SClient) RollbackDeployment(namespace,deployment,toImage string) {
 
-		deploymentsClient := k.AppsV1().Deployments(namespaceFlag)
+	deploymentsClient := k.AppsV1().Deployments(namespace)
 
-		deployment, err := deploymentsClient.Get(deploymentFlag, metav1.GetOptions{})
+	deploy, err := deploymentsClient.Get(context.Background(), deployment, metav1.GetOptions{})
 
-		if err != nil {
-			panic(err)
-		}
+	if err != nil {
+		panic(err)
+	}
 
-		deployment.Spec.Template.Spec.Containers[0].Image = toImageFlag
-		_, deploymentUpdateStatus := deploymentsClient.Update(deployment)
+	deploy.Spec.Template.Spec.Containers[0].Image = toImage
+	_, deploymentUpdateStatus := deploymentsClient.Update(context.Background(), deploy, metav1.UpdateOptions{})
 
-		if deploymentUpdateStatus != nil {
-			panic(err)
-		} else {
-			fmt.Println("Successfully rollbacked to image", toImageFlag)
-		}
-
+	if deploymentUpdateStatus != nil {
+		panic(err)
+	} else {
+		fmt.Println("Successfully rollbacked to image", toImage)
 	}
 }

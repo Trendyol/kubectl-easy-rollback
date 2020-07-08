@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var k8sClient *client.K8SClient
+var k8sClient = client.NewK8sClient()
 
 var rootCmd = &cobra.Command{
 	Use:   "kubectl-easyrollback",
@@ -15,11 +15,6 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
-}
-
-func initConfig() {
-	fmt.Println("initializing..")
-	k8sClient = client.NewK8sClient()
 }
 
 func Execute() {
