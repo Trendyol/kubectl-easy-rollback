@@ -5,12 +5,12 @@ env:
   - CGO_ENABLED=0
   - GOFLAGS=-mod=vendor
   - GO111MODULE=auto
-
 before:
   hooks:
     - go mod download
     - go mod vendor
 builds:
+  - id: binary
     goos:
       - linux
       - darwin
@@ -18,6 +18,8 @@ builds:
     ldflags:
       - -s -w -X cmd.version={{.Version}}
 archives:
+  - builds:
+      - binary
   - replacements:
       darwin: Darwin
       linux: Linux
