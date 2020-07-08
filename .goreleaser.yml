@@ -7,9 +7,11 @@ env:
   - GO111MODULE=auto
 before:
   hooks:
+    - go mod tidy
     - go mod vendor
 builds:
-  - id: binary
+  -
+    id: "binary"
     goos:
       - linux
       - darwin
@@ -19,7 +21,7 @@ builds:
 archives:
   - builds:
       - binary
-  - replacements:
+    replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
