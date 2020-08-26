@@ -80,8 +80,15 @@ func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
 	matchLabels := deploy.Spec.Selector.MatchLabels
 	var labels bytes.Buffer
 
+	l := len(matchLabels)
+	c := 0
+
 	for key, value := range matchLabels {
+		c += 1
 		labels.WriteString(key + "=" + value)
+		if c != l {
+			labels.WriteString(",")
+		}
 	}
 
 	replicaSets, _ := k.AppsV1().ReplicaSets(namespace).List(context.Background(), metav1.ListOptions{
