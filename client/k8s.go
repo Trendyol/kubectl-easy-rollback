@@ -12,8 +12,8 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/ttacon/chalk"
-	v1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	appsV1 "k8s.io/api/apps/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -22,19 +22,31 @@ type K8SClient struct {
 	*kubernetes.Clientset
 }
 
-func NewK8sClient() *K8SClient {
+func NewK8sClient(kubeconfig string, context string) *K8SClient {
 	homeDir, err := homedir.Dir()
 	if err != nil {
 		panic(err.Error())
 	}
-	var kubeConfigPath = filepath.Join(homeDir, ".kube", "config")
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	if kubeconfig == "" {
+		kubeconfig = filepath.Join(homeDir, ".kube", "config")
+	}
+
+	// TODO: Support all kubectl global flags
+	overrides := clientcmd.ConfigOverrides{}
+
+	if context != "" {
+		overrides.CurrentContext = context
+	}
+
+	deferredLoadingClientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
+		&overrides)
+
+	config, err := deferredLoadingClientConfig.ClientConfig()
 	if err != nil {
 		panic(err.Error())
 	}
-
 	// create the client
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -45,7 +57,7 @@ func NewK8sClient() *K8SClient {
 
 type CmdFunc func(cmd *cobra.Command, args []string)
 
-func findCurrentReplicaSetOfDeployment(replicaSets *v1.ReplicaSetList) v1.ReplicaSet {
+func findCurrentReplicaSetOfDeployment(replicaSets *appsV1.ReplicaSetList) appsV1.ReplicaSet {
 	for _, replicaSet := range replicaSets.Items {
 		if *replicaSet.Spec.Replicas != 0 {
 			return replicaSet
@@ -59,7 +71,7 @@ type Image struct {
 	creation time.Time
 }
 
-func findOtherDeployedImages(replicaSets *v1.ReplicaSetList) *hashmap.Map {
+func findOtherDeployedImages(replicaSets *appsV1.ReplicaSetList) *hashmap.Map {
 	images := hashmap.New()
 	for _, replicaSet := range replicaSets.Items {
 		images.Put(replicaSet.Spec.Template.Spec.Containers[0].Image,
@@ -71,7 +83,7 @@ func findOtherDeployedImages(replicaSets *v1.ReplicaSetList) *hashmap.Map {
 func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
 	deploymentsClient := k.AppsV1().Deployments(namespace)
 
-	deploy, err := deploymentsClient.Get(context.Background(), deployment, metav1.GetOptions{})
+	deploy, err := deploymentsClient.Get(context.Background(), deployment, metaV1.GetOptions{})
 
 	if err != nil {
 		panic(err)
@@ -91,7 +103,7 @@ func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
 		}
 	}
 
-	replicaSets, _ := k.AppsV1().ReplicaSets(namespace).List(context.Background(), metav1.ListOptions{
+	replicaSets, _ := k.AppsV1().ReplicaSets(namespace).List(context.Background(), metaV1.ListOptions{
 		LabelSelector: labels.String(),
 	})
 
@@ -114,14 +126,14 @@ func (k *K8SClient) RollbackDeployment(namespace, deployment, toImage string) {
 
 	deploymentsClient := k.AppsV1().Deployments(namespace)
 
-	deploy, err := deploymentsClient.Get(context.Background(), deployment, metav1.GetOptions{})
+	deploy, err := deploymentsClient.Get(context.Background(), deployment, metaV1.GetOptions{})
 
 	if err != nil {
 		panic(err)
 	}
 
 	deploy.Spec.Template.Spec.Containers[0].Image = toImage
-	_, deploymentUpdateStatus := deploymentsClient.Update(context.Background(), deploy, metav1.UpdateOptions{})
+	_, deploymentUpdateStatus := deploymentsClient.Update(context.Background(), deploy, metaV1.UpdateOptions{})
 
 	if deploymentUpdateStatus != nil {
 		panic(err)

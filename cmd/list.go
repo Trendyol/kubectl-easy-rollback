@@ -5,13 +5,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "Print all the previous deployed image versions of deployment",
-	Run: func(cmd *cobra.Command, args []string) {
-		k8sClient := client.NewK8sClient()
-		deploymentFlag := cmd.Flag("deployment").Value.String()
-		namespaceFlag := cmd.Flag("namespace").Value.String()
-		k8sClient.ListPreviousDeployedImages(deploymentFlag, namespaceFlag)
-	},
+func NewListCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "Print all the previous deployed image versions of deployment",
+		Run: func(cmd *cobra.Command, args []string) {
+			k8sClient := client.NewK8sClient(cmd.Flag("kubeconfig").Value.String(), cmd.Flag("context").Value.String())
+			deploymentFlag := cmd.Flag("deployment").Value.String()
+			namespaceFlag := cmd.Flag("namespace").Value.String()
+			k8sClient.ListPreviousDeployedImages(deploymentFlag, namespaceFlag)
+		},
+	}
+	return cmd
 }

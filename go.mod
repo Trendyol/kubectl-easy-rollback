@@ -1,6 +1,6 @@
 module github.com/Trendyol/easy-rollback
 
-go 1.14
+go 1.15
 
 require (
 	github.com/emirpasic/gods v1.12.0
@@ -21,6 +21,7 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
+	k8s.io/cli-runtime v0.18.8
 	k8s.io/client-go v0.18.8
 	k8s.io/utils v0.0.0-20200821003339-5e75c0163111 // indirect
 )
