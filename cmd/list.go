@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Trendyol/easy-rollback/client"
+	"github.com/Trendyol/kubectl-easy-rollback/client"
 	"github.com/spf13/cobra"
 )
 

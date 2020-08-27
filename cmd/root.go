@@ -39,7 +39,7 @@ func NewCmdRoot(streams genericclioptions.IOStreams) *cobra.Command {
 	o := NewRootOptions(streams)
 
 	cmd := &cobra.Command{
-		Use:   "kubectl-easyrollback",
+		Use:   "kubectl-easy-rollback",
 		Short: "",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()

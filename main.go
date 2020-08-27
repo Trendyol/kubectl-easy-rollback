@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Trendyol/easy-rollback/cmd"
+	"github.com/Trendyol/kubectl-easy-rollback/cmd"
 )
 
 var version = "0.0.0"
