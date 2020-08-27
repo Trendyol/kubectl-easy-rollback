@@ -4,18 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"path/filepath"
-	"strings"
-	"time"
-
-	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
-	"github.com/ttacon/chalk"
-	appsV1 "k8s.io/api/apps/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/printers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 type K8SClient struct {
@@ -45,39 +41,14 @@ func NewK8sClient(kubeconfig string, context string) *K8SClient {
 
 	config, err := deferredLoadingClientConfig.ClientConfig()
 	if err != nil {
-		panic(err.Error())
+		log.Fatalf("detail: %+v", err)
 	}
 	// create the client
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		log.Fatalf("detail: %+v", err)
 	}
 	return &K8SClient{client}
-}
-
-type CmdFunc func(cmd *cobra.Command, args []string)
-
-func findCurrentReplicaSetOfDeployment(replicaSets *appsV1.ReplicaSetList) appsV1.ReplicaSet {
-	for _, replicaSet := range replicaSets.Items {
-		if *replicaSet.Spec.Replicas != 0 {
-			return replicaSet
-		}
-	}
-	panic("No active replicaSet found for given deployment")
-}
-
-type Image struct {
-	name     string
-	creation time.Time
-}
-
-func findOtherDeployedImages(replicaSets *appsV1.ReplicaSetList) *hashmap.Map {
-	images := hashmap.New()
-	for _, replicaSet := range replicaSets.Items {
-		images.Put(replicaSet.Spec.Template.Spec.Containers[0].Image,
-			replicaSet.CreationTimestamp.Format("02 January 2006 15:04:05"))
-	}
-	return images
 }
 
 func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
@@ -86,7 +57,7 @@ func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
 	deploy, err := deploymentsClient.Get(context.Background(), deployment, metaV1.GetOptions{})
 
 	if err != nil {
-		panic(err)
+		log.Fatalf("detail: %+v", err)
 	}
 
 	matchLabels := deploy.Spec.Selector.MatchLabels
@@ -107,18 +78,16 @@ func (k *K8SClient) ListPreviousDeployedImages(deployment, namespace string) {
 		LabelSelector: labels.String(),
 	})
 
-	currentReplicaSet := findCurrentReplicaSetOfDeployment(replicaSets)
+	gtp, err := printers.NewGoTemplatePrinter([]byte("{{range .items}}{{range .spec.template.spec.containers}}{{printf \"Image: %s name: %s\\n\"  .image .name}}{{end}}{{end}}"))
 
-	deployedImages := findOtherDeployedImages(replicaSets)
+	if err != nil {
+		log.Fatalf("detail: %+v", err)
+	}
 
-	for _, image := range deployedImages.Keys() {
-		creationTime, _ := deployedImages.Get(image)
-		if strings.Compare(currentReplicaSet.Spec.Template.Spec.Containers[0].Image, image.(string)) == 0 {
-			fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s %s", image, creationTime.(string),
-				chalk.Green.Color("*")))
-		} else {
-			fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s ", image, creationTime.(string)))
-		}
+	err = gtp.PrintObj(replicaSets, os.Stdout)
+
+	if err != nil {
+		log.Fatalf("detail: %+v", err)
 	}
 }
 
@@ -129,14 +98,14 @@ func (k *K8SClient) RollbackDeployment(namespace, deployment, toImage string) {
 	deploy, err := deploymentsClient.Get(context.Background(), deployment, metaV1.GetOptions{})
 
 	if err != nil {
-		panic(err)
+		log.Fatalf("detail: %+v", err)
 	}
 
 	deploy.Spec.Template.Spec.Containers[0].Image = toImage
 	_, deploymentUpdateStatus := deploymentsClient.Update(context.Background(), deploy, metaV1.UpdateOptions{})
 
 	if deploymentUpdateStatus != nil {
-		panic(err)
+		log.Fatalf("detail: %+v", err)
 	} else {
 		fmt.Println("Successfully rollbacked to image", toImage)
 	}
