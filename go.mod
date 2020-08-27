@@ -1,4 +1,4 @@
-module github.com/Trendyol/easy-rollback
+module github.com/Trendyol/kubectl-easy-rollback
 
 go 1.15
 
