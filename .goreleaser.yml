@@ -7,7 +7,6 @@ env:
   - GO111MODULE=auto
 before:
   hooks:
-    - go mod tidy
     - go mod vendor
 builds:
   -
