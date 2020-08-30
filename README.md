@@ -1,5 +1,5 @@
 ![alt text](https://img.icons8.com/nolan/2x/time-machine.png)  <br/>
-[![CircleCI](https://circleci.com/gh/Trendyol/easy-rollback/tree/master.svg?style=svg)](https://circleci.com/gh/Trendyol/easy-rollback/tree/master)
+[![CircleCI](https://circleci.com/gh/Trendyol/kubectl-easy-rollback/tree/master.svg?style=svg)](https://circleci.com/gh/Trendyol/easy-rollback/tree/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/easy-rollback)](https://goreportcard.com/report/github.com/Trendyol/easy-rollback)
 
 # EasyRollback
