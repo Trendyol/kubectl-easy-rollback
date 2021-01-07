@@ -3,11 +3,11 @@ package kubernetes
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/Trendyol/easy-rollback/client"
-	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/spf13/cobra"
 	"github.com/ttacon/chalk"
 	v1 "k8s.io/api/apps/v1"
@@ -37,13 +37,10 @@ type Image struct {
 	creation time.Time
 }
 
-func findOtherDeployedImages(replicaSets *v1.ReplicaSetList) *hashmap.Map {
-	images := hashmap.New()
-	for _, replicaSet := range replicaSets.Items {
-		images.Put(replicaSet.Spec.Template.Spec.Containers[0].Image,
-			replicaSet.CreationTimestamp.Format("02 January 2006 15:04:05"))
-	}
-	return images
+func sortItemsByCreateDate(replicaSets *v1.ReplicaSetList) {
+	sort.Slice(replicaSets.Items, func(i, j int) bool{
+		return replicaSets.Items[i].CreationTimestamp.Unix() < replicaSets.Items[j].CreationTimestamp.Unix()
+	})
 }
 
 func ListPreviousDeployedImages() CommandFunction {
@@ -72,15 +69,17 @@ func ListPreviousDeployedImages() CommandFunction {
 
 		currentReplicaSet := findCurrentReplicaSetOfDeployment(replicaSets)
 
-		deployedImages := findOtherDeployedImages(replicaSets)
+		sortItemsByCreateDate(replicaSets)
 
-		for _, image := range deployedImages.Keys() {
-			creationTime, _ := deployedImages.Get(image)
-			if strings.Compare(currentReplicaSet.Spec.Template.Spec.Containers[0].Image, image.(string)) == 0 {
-				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s %s", image, creationTime.(string),
+		for _, replicaSet := range replicaSets.Items {
+			image := replicaSet.Spec.Template.Spec.Containers[0].Image
+			creationTime := replicaSet.CreationTimestamp.Format("02 January 2006 15:04:05")
+
+			if strings.Compare(currentReplicaSet.Spec.Template.Spec.Containers[0].Image, image) == 0 {
+				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s %s", image, creationTime,
 					chalk.Green.Color("*")))
 			} else {
-				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s ", image, creationTime.(string)))
+				fmt.Println(fmt.Sprintf("Image version: %s , Creation creationTime: %s ", image, creationTime))
 			}
 		}
 	}
